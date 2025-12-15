@@ -1,0 +1,48 @@
+# Node dependencies
+node_modules/
+
+# Build/output folders
+/dist
+/build
+/temp
+/coverage
+.output
+.nuxt # Nuxt.js specific output
+
+# Logs and debug files
+logs/
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example # Keep the example file but ignore actual env files
+
+# OS and IDE files
+.DS_Store # macOS specific
+Thumbs.db # Windows specific
+.vscode/ # VS Code settings
+.idea/ # IntelliJ IDEA settings
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.vshost.exe.config
+*.vshost.exe.manifest
+.cache
+.project
+.classpath
+
+# Other generated files
+pids/
+*.pid
+*.seed
+lib-cov/
+*.tgz
+.npmrc
+.short sha
+
+# Typings
+/typings

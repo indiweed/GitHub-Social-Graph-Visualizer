@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Social Graph Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1><i class="fab fa-github"></i> GitHub Social Graph</h1>
+                <p class="subtitle">Визуализация связей через форки и вклады в репозитории</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="control-panel">
+                <div class="search-section">
+                    <div class="input-group">
+                        <label for="repo-input">
+                            <i class="fas fa-user"></i> GitHub Username/Repo
+                        </label>
+                        <div class="input-with-button">
+                            <input 
+                                type="text" 
+                                id="repo-input" 
+                                placeholder="Например: torvalds/GuitarPedal, microsoft/vscode"
+                                autocomplete="off"
+                            >
+                            <button id="build-graph-btn" class="btn-primary">
+                                <i class="fas fa-project-diagram"></i> Построить граф
+                            </button>
+                        </div>
+                        <p class="input-hint">
+                            Введите имя пользователя или организации GitHub для анализа связей
+                        </p>
+                    </div>
+
+                    <div class="settings-section">
+                        <div class="setting-item">
+                            <label for="depth-select">Глубина анализа:</label>
+                            <select id="depth-select">
+                                <option value="1">Первый уровень (рекомендуется)</option>
+                                <option value="2">Второй уровень</option>
+                                <option value="0">Только мои репозитории</option>
+                            </select>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-forks" checked>
+                                <span>Показывать связи форков</span>
+                            </label>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-contributions" checked>
+                                <span>Показывать вклады контрибьюторов</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="node-count">0</div>
+                                <div class="stat-label">Пользователей</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="edge-count">0</div>
+                                <div class="stat-label">Связей</div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="api-count">0</div>
+                                <div class="stat-label">Запросов API</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button id="reset-btn" class="btn-secondary">
+                            <i class="fas fa-redo"></i> Сбросить
+                        </button>
+                        <button id="export-btn" class="btn-secondary">
+                            <i class="fas fa-download"></i> Экспорт данных
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="visualization-section">
+                <div class="graph-container">
+                    <div class="graph-header">
+                        <h3><i class="fas fa-network-wired"></i> Граф социальных связей</h3>
+                        <div class="graph-controls">
+                            <button id="zoom-in" class="icon-btn" title="Увеличить">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button id="zoom-out" class="icon-btn" title="Уменьшить">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <button id="center-graph" class="icon-btn" title="Центрировать">
+                                <i class="fas fa-crosshairs"></i>
+                            </button>
+                            <div class="legend">
+                                <div class="legend-item">
+                                    <span class="legend-color owner"></span>
+                                    <span>Владелец</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color contributor"></span>
+                                    <span>Контрибьютор</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-edge fork"></span>
+                                    <span>Форк</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-edge contribution"></span>
+                                    <span>Вклад</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-canvas-container">
+                        <div id="graph-canvas"></div>
+                    </div>
+                </div>
+
+                <div class="details-panel">
+                    <div class="details-header">
+                        <h3><i class="fas fa-info-circle"></i> Детали узла</h3>
+                        <div class="node-type-badge" id="node-type-badge">Не выбран</div>
+                    </div>
+                    
+                    <div class="details-content" id="details-content">
+                        <div class="empty-details">
+                            <i class="fas fa-mouse-pointer"></i>
+                            <p>Кликните на любой узел графа, чтобы увидеть детальную информацию</p>
+                        </div>
+                        
+                        <div class="node-details" id="node-details" style="display: none;">
+                            <div class="node-header">
+                                <div class="node-avatar" id="node-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="node-title">
+                                    <h4 id="node-name">Имя пользователя</h4>
+                                    <a href="#" id="node-link" target="_blank" class="node-link">
+                                        <i class="fab fa-github"></i> Профиль GitHub
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="node-stats">
+                                <div class="node-stat">
+                                    <span class="stat-name">Исходящие связи:</span>
+                                    <span class="stat-value" id="outgoing-count">0</span>
+                                </div>
+                                <div class="node-stat">
+                                    <span class="stat-name">Входящие связи:</span>
+                                    <span class="stat-value" id="incoming-count">0</span>
+                                </div>
+                                <div class="node-stat">
+                                    <span class="stat-name">Вес узла:</span>
+                                    <span class="stat-value" id="node-weight">0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="connections-section">
+                                <h5><i class="fas fa-link"></i> Связанные узлы</h5>
+                                <div class="connections-list" id="connections-list">
+                                    <!-- Список связей будет добавляться динамически -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-status">
+                        <h5><i class="fas fa-cloud"></i> Статус GitHub API</h5>
+                        <div class="status-item">
+                            <span class="status-label">Оставшиеся запросы:</span>
+                            <span class="status-value" id="rate-limit">60</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Сброс лимита:</span>
+                            <span class="status-value" id="rate-reset">--:--</span>
+                        </div>
+                        <div class="status-hint">
+                            <i class="fas fa-info-circle"></i>
+                            <span>Без аутентификации: 60 запросов/час</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="repositories-section">
+                <h3><i class="fas fa-book"></i> Проанализированные репозитории</h3>
+                <div class="repos-container">
+                    <div class="empty-repos" id="empty-repos">
+                        <i class="fas fa-code"></i>
+                        <p>Список репозиториев появится после анализа</p>
+                    </div>
+                    <div class="repos-list" id="repos-list">
+                        <!-- Список репозиториев будет добавляться динамически -->
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p>Использует публичное <a href="https://docs.github.com/rest" target="_blank">GitHub API</a></p>
+                <p class="warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Ограничение: 60 запросов в час без аутентификации
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script src="https://visjs.github.io/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
